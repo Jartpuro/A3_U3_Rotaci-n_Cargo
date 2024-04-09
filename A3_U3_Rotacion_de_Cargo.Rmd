@@ -1,0 +1,217 @@
+---
+title: "A3_U3_Rotación_de_Cargo"
+author: "Jhon Alexander Rojas Tavera"
+date: "2024-04-08"
+output: 
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+
+# Instalar y cargar paquetes necesarios
+required_packages <- c("paqueteMODELOS", "leaflet", "ggplot2", "effects", "plotly", "leaflet.extras", "dplyr", "lmtest", "corrplot", "tidyverse", "skimr", "vioplot")
+
+
+install_if_missing <- function(package) {
+  if (!require(package, character.only = TRUE)) {
+    install.packages(package)
+    library(package, character.only = TRUE)
+  }
+}
+
+# Instalación de paquete MODELOS desde GitHub
+if (!require(paqueteMODELOS)) {
+  devtools::install_github("dgonxalex80/paqueteMODELOS", force = TRUE)
+}
+
+# Instalar y cargar paquetes
+invisible(sapply(required_packages, install_if_missing))
+
+# Cargar conjunto de datos si es necesario
+if (!exists("rotacion")) {
+  data("rotacion")
+}
+
+```
+
+##Rotación de cargo
+
+<p>En una organización, se busca comprender y prever los factores que influyen en la rotación de empleados entre distintos cargos. La empresa ha recopilado datos históricos sobre el empleo de sus trabajadores, incluyendo variables como la antigüedad en el cargo actual, el nivel de satisfacción laboral, el salario actual, edad y otros factores relevantes. La gerencia planea desarrollar un modelo de regresión logística que permita estimar la probabilidad de que un empleado cambie de cargo en el próximo período y determinar cuales factores indicen en mayor proporción a estos cambios.
+
+
+
+Con esta información, la empresa podrá tomar medidas proactivas para retener a su talento clave, identificar áreas de mejora en la gestión de recursos humanos y fomentar un ambiente laboral más estable y tranquilo. La predicción de la probabilidad de rotación de empleados ayudará a la empresa a tomar decisiones estratégicas informadas y a mantener un equipo de trabajo comprometido y satisfecho en sus roles actuales.
+
+
+
+A continuación se describen los pasos que la gerencia ha propuesto para el análisis: </p>
+
+## Selección de variables
+
+<p>Seleccione 3 variables categóricas (distintas de rotación) y 3 variables cuantitativas, que se consideren estén relacionadas con la rotación. <p>
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+
+
+
+# Cargar datos
+data("rotacion")
+
+
+summary(rotacion)
+str(rotacion)
+
+# Análisis Exploratorio de Datos (EDA)
+# Resumen estadístico de las variables cuantitativas
+summary(rotacion[, c("Edad", "Ingreso_Mensual", "Antigüedad_Cargo")])
+
+
+```
+
+<p> Teniendo en cuenta la información que contiene el dataframe, se seleccionan las siguientes variables
+
+
+<ul>
+<b>Variables categóricas:</b>
+
+
+<li>Viaje de Negocios: Esta variable representa la frecuencia de los viajes de negocios de los empleados. Podría estar relacionada con la rotación, ya que los viajes constantes podrían afectar el equilibrio entre el trabajo y la vida personal de los empleados.</li>
+<li>Departamento: El departamento en el que trabaja un empleado puede influir en su satisfacción laboral y en sus oportunidades de crecimiento. Esto podría estar relacionado con la rotación.</li>
+<li>Horas Extra: La cantidad de horas extra trabajadas por los empleados podría estar relacionada con la rotación, ya que el exceso de trabajo puede llevar al agotamiento y a la insatisfacción laboral.
+</li>
+
+
+<b>Variables cuantitativas:</b>
+
+<li>Edad: La edad de los empleados podría estar relacionada con la rotación, ya que las personas en diferentes etapas de su vida pueden tener diferentes prioridades y necesidades laborales.</li>
+<li>Ingreso Mensual: El salario de los empleados puede influir en su decisión de quedarse o irse de una empresa. Una remuneración más alta podría estar relacionada con una menor rotación.<7li>
+<li>Antigüedad en el Cargo: Cuánto tiempo ha estado un empleado en su puesto actual puede estar relacionado con su rotación. Los empleados con menos tiempo en el cargo podrían ser más propensos a rotar en busca de nuevas oportunidades.</li>
+</p>
+</ul>
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+
+# Crear un subset de datos con las variables seleccionadas
+subset_datos <- select(rotacion, `Viaje de Negocios`, Departamento, Horas_Extra, Edad, Ingreso_Mensual, Antigüedad_Cargo)
+
+str(subset_datos)
+
+summary(subset_datos)
+
+head(subset_datos)
+
+# Verificar si todas las observaciones en las variables numéricas son realmente numéricas
+cat("Clase de las variables seleccionadas:\n")
+sapply(subset_datos, class)
+
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+
+# Convertir las variables categóricas a factores
+subset_datos$`Viaje de Negocios` <- as.factor(subset_datos$`Viaje de Negocios`)
+subset_datos$Departamento <- as.factor(subset_datos$Departamento)
+subset_datos$Horas_Extra <- as.factor(subset_datos$Horas_Extra)
+
+# Calcular matriz de correlación para el subset de datos
+# Excluir variables categóricas de la matriz de correlación
+matriz_correlacion <- cor(subset_datos[, c("Edad", "Ingreso_Mensual", "Antigüedad_Cargo")])
+
+# Crear gráfico de correlación interactivo
+plot_ly(
+  x = colnames(matriz_correlacion),
+  y = colnames(matriz_correlacion),
+  z = as.matrix(matriz_correlacion),
+  type = "heatmap",
+  colorscale = "Viridis",
+  text = round(as.matrix(matriz_correlacion), 2),
+  hoverinfo = "text"
+) %>%
+  layout(
+    title = "Matriz de Correlación",
+    xaxis = list(title = ""),
+    yaxis = list(title = "")
+  )
+
+# Mostrar la tabla de correlación
+print(matriz_correlacion)
+
+```
+
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+
+# Análisis Exploratorio de Datos (EDA)
+# Visualizaciones para variables cuantitativas
+
+
+# Boxplots interactivos
+boxplot_edad <- plot_ly(data = rotacion, y = ~Edad, type = "box", name = "Edad", marker = list(color = "blue")) %>%
+  layout(title = "Boxplot de Edad")
+
+boxplot_ingreso <- plot_ly(data = rotacion, y = ~Ingreso_Mensual, type = "box", name = "Ingreso Mensual", marker = list(color = "green")) %>%
+  layout(title = "Boxplot de Ingreso Mensual")
+
+boxplot_antiguedad <- plot_ly(data = rotacion, y = ~Antigüedad_Cargo, type = "box", name = "Antigüedad en el Cargo", marker = list(color = "orange")) %>%
+  layout(title = "Boxplot de Antigüedad en el Cargo")
+
+# Visualizaciones para variables categóricas
+# Gráficos de barras interactivos
+barplot_viaje <- plot_ly(data = rotacion, x = ~`Viaje de Negocios`, type = "histogram", colors = "blue", 
+                         marker = list(line = list(color = "white", width = 0.5))) %>%
+  layout(title = "Frecuencia de Viajes de Negocios")
+
+barplot_departamento <- plot_ly(data = rotacion, x = ~Departamento, type = "histogram", colors = "green", 
+                                marker = list(line = list(color = "white", width = 0.5))) %>%
+  layout(title = "Frecuencia de Departamentos")
+
+barplot_horas <- plot_ly(data = rotacion, x = ~Horas_Extra, type = "histogram", colors = "orange", 
+                         marker = list(line = list(color = "white", width = 0.5))) %>%
+  layout(title = "Frecuencia de Horas Extra")
+
+
+
+# Crear mosaicos
+subplot(
+  subplot(boxplot_edad, boxplot_ingreso, boxplot_antiguedad, nrows = 3),
+  nrows = 1
+) 
+subplot(
+  subplot(barplot_viaje, barplot_departamento, barplot_horas, nrows = 3),
+  nrows = 1
+)
+
+
+```
+
+
+## Análisis univariado
+
+## Análisis univariado
+
+## Estimación del modelo
+
+## Evaluación
+
+## Predicciones
+
+## Conclusiones
+
+
+## 8. Anexos - Repositorio Código fuente
+
+Si deseas consultar como fue construido y desarrollado mi informe, ingresa al siguiente enlace: <b><a href="">Repositorio Github</a></b>
+
+
+
+
