@@ -369,7 +369,7 @@ kable(coeficientes_df)
 
 A continuación se procede con la interpretación de los coeficientes:
 
-1.Intercept: Este es el intercepto del modelo. Representa el logaritmo de la razón de probabilidades de rotación cuando todas las variables predictoras son cero. En este caso, es 0.1619797, lo que significa que cuando todas las demás variables son cero, el log-odds de rotación es de aproximadamente 0.16.
+1. Intercept: Este es el intercepto del modelo. Representa el logaritmo de la razón de probabilidades de rotación cuando todas las variables predictoras son cero. En este caso, es 0.1619797, lo que significa que cuando todas las demás variables son cero, el log-odds de rotación es de aproximadamente 0.16.
 
 2. Viaje de NegociosNo_Viaja: Un coeficiente negativo (-1.3541771) indica que los empleados que no viajan por negocios tienen menores log-odds de rotación en comparación con aquellos que viajan por negocios, manteniendo todas las demás variables constantes. 
 
