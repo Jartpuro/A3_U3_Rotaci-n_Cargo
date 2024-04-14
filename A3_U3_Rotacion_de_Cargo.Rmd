@@ -76,11 +76,8 @@ data("rotacion")
 summary(rotacion)
 str(rotacion)
 
-# Análisis Exploratorio de Datos (EDA)
-# Resumen estadístico de las variables cuantitativas
-summary(rotacion[, c("Edad", "Ingreso_Mensual", "Antigüedad_Cargo")])
-
 ```
+<p>Con  base en la estructura del dataframe acerca de la rotación laboral se muestra la información de 1470 empleados. Se detallan aspectos clave como la edad promedio de los empleados (36.92 años) y su experiencia laboral (11.28 años), junto con una diversidad de características demográficas y laborales como género, estado civil, departamento y cargo. Además, se exploran variables relacionadas con la satisfacción y el rendimiento laboral, así como factores potencialmente influyentes en la rotación, como el equilibrio entre trabajo y vida personal, horas extras y antigüedad en la empresa. </p>
 
 <p> Teniendo en cuenta la información que contiene el dataframe, se seleccionan las siguientes variables
 
@@ -210,6 +207,13 @@ subplot(
 6. Antigüedad en el Cargo: Se espera que exista una relación entre la antigüedad en el cargo de los empleados y su rotación. La hipótesis es que los empleados con menos antigüedad en el cargo pueden tener una mayor probabilidad de rotar en busca de mejores oportunidades de carrera, mientras que aquellos con más antigüedad pueden tener una menor probabilidad de rotar debido a la estabilidad laboral y las oportunidades de promoción.
 
 ## 2. Análisis univariado
+
+<p>Realiza un análisis univariado (caracterización) de la información contenida en la base de datos rotación.
+
+
+
+Nota:
+Los indicadores o gráficos se usan dependiendo del tipo de variable (cuantitativas o cualitativas). Incluir interpretaciones de la variable rotación.</p>
 ```{r , warning=FALSE, echo=FALSE, message=FALSE}
 # Variables cuantitativas
 # Estadísticas descriptivas
@@ -250,6 +254,8 @@ kable(tabla_cualitativas)
 ```
 
 ## 3. Análisis bivariado
+
+<p>Realiza un análisis de bivariado en donde la variable respuesta sea rotacion codificada de la siguiente manera (y=1 es si rotación, y=0  es no rotación). Con base en estos resultados identifique cuales son las variables determinantes de la rotación e interpretar el signo del coeficiente estimado. Compare estos resultados con la hipótesis planteada en el punto 2.</p>
 ```{r , warning=FALSE, echo=FALSE, message=FALSE}
 # Convertir la variable "Rotación" a 0 y 1
 rotacion$Rotación <- ifelse(rotacion$Rotación == "Si", 1, 0)
@@ -308,6 +314,41 @@ if (exists("modelo")) {
 
 ```
 
+<p>
+**Comparación de Coeficientes con Hipótesis:**
+
+- **Viaje de Negocios:**
+  - **Coeficiente:** Viaje de Negocios No_Viaja: -1.3389, Raramente: -0.6346
+  - **Hipótesis:** Se esperaba que los empleados que viajan frecuentemente por negocios tuvieran una mayor probabilidad de rotación que aquellos que viajan raramente.
+  - **Conclusión:** Consistente con la hipótesis, ya que los coeficientes son negativos, indicando que aquellos que viajan menos tienen menores probabilidades de rotación.
+
+- **Departamento:**
+  - **Coeficiente:** Departamento RH: 0.38175, Ventas: 0.48116
+  - **Hipótesis:** Se esperaba que ciertos departamentos tuvieran tasas de rotación más altas que otros debido a diferencias en la cultura organizacional, la carga de trabajo o las oportunidades de crecimiento.
+  - **Conclusión:** Consistente con la hipótesis, ya que algunos departamentos tienen coeficientes positivos, indicando tasas de rotación más altas.
+
+- **Horas Extra:**
+  - **Coeficiente:** Horas Extra Si: 1.3274
+  - **Hipótesis:** Se esperaba que los empleados que trabajan horas extra tuvieran una mayor probabilidad de rotación que aquellos que no lo hacen.
+  - **Conclusión:** Consistente con la hipótesis, ya que el coeficiente es positivo, indicando que aquellos que trabajan horas extra tienen mayores probabilidades de rotación.
+
+- **Edad:**
+  - **Coeficiente:** Edad: -0.05225
+  - **Hipótesis:** Se esperaba que los empleados más jóvenes tuvieran una mayor probabilidad de rotación que los mayores.
+  - **Conclusión:** Inconsistente con la hipótesis, ya que el coeficiente es negativo pero pequeño, indicando una relación débil entre la edad y la rotación.
+
+- **Ingreso Mensual:**
+  - **Coeficiente:** Ingreso Mensual: -0.0001271
+  - **Hipótesis:** Se esperaba que los empleados con salarios más bajos tuvieran una mayor probabilidad de rotación.
+  - **Conclusión:** Inconsistente con la hipótesis, ya que el coeficiente es negativo pero cercano a cero, indicando una relación débil entre el ingreso mensual y la rotación.
+
+- **Antigüedad en el Cargo:**
+  - **Coeficiente:** Antigüedad en el Cargo: -0.14628
+  - **Hipótesis:** Se esperaba que los empleados con menos antigüedad en el cargo tuvieran una mayor probabilidad de rotación que los que tienen más antigüedad.
+  - **Conclusión:** Inconsistente con la hipótesis, ya que el coeficiente es negativo pero pequeño, indicando una relación débil entre la antigüedad en el cargo y la rotación.
+
+</p>
+
 ```{r , warning=FALSE, echo=FALSE, message=FALSE}
 # Ajustar un modelo de regresión logística
 modelo <- glm(Rotación ~ `Viaje de Negocios` + Departamento + Horas_Extra + Edad + Ingreso_Mensual + Antigüedad_Cargo, data = rotacion, family = "binomial")
@@ -338,8 +379,37 @@ if (exists("modelo")) {
 }
 
 ```
+<p> 
+La información de los Odds Ratios para las variables predictoras añade valor al informe al proporcionar una medida de la asociación entre cada variable y la probabilidad de rotación de empleados. Los Odds Ratios muestran cuánto aumenta o disminuye la probabilidad de rotación cuando una variable aumenta en una unidad, manteniendo todas las demás variables constantes.
+
+Horas Extra (Horas_ExtraSi): Un Odds Ratio de 4.155 indica que los empleados que trabajan horas extra tienen aproximadamente 4.155 veces más probabilidades de rotar que aquellos que no lo hacen, manteniendo todas las demás variables constantes.
+
+Departamento (DepartamentoVentas y DepartamentoRH): Los Odds Ratios de 1.914 y 1.547 respectivamente sugieren que pertenecer a los departamentos de Ventas o Recursos Humanos aumenta la probabilidad de rotación en aproximadamente 1.914 y 1.547 veces en comparación con otros departamentos, manteniendo todas las demás variables constantes.
+
+Ingreso Mensual (Ingreso_Mensual): Un Odds Ratio de 0.9999181 sugiere que por cada aumento unitario en el ingreso mensual, la probabilidad de rotación disminuye en un 0.0000819%, manteniendo todas las demás variables constantes. Esto indica una asociación muy débil entre el ingreso mensual y la rotación.
+
+Edad (Edad) y Antigüedad en el Cargo (Antigüedad_Cargo): Los Odds Ratios de 0.968 y 0.894 respectivamente indican que por cada aumento unitario en la edad o la antigüedad en el cargo, la probabilidad de rotación disminuye en un 3.2% y un 10.6% respectivamente, manteniendo todas las demás variables constantes.
+
+Viaje de Negocios (Viaje de Negocios Raramente y No Viaja): Los Odds Ratios de 0.5067 y 0.2582 respectivamente sugieren que los empleados que viajan raramente o no viajan tienen una menor probabilidad de rotación en comparación con aquellos que viajan frecuentemente por negocios, manteniendo todas las demás variables constantes.
+
+En resumen, los Odds Ratios proporcionan información adicional sobre la fuerza y la dirección de la asociación entre cada variable y la probabilidad de rotación de empleados, lo que ayuda a comprender mejor la influencia relativa de cada variable en el fenómeno de la rotación.</p>
+
+
+<p>
+**Discusión:**
+
+Al interpretar los coeficientes de regresión logística, nos centramos en la dirección y la magnitud del efecto de cada variable en la probabilidad de rotación. Sin embargo, al considerar los Odds Ratios, obtenemos una perspectiva más detallada de esta relación.
+
+Algunas discrepancias entre la interpretación de los coeficientes y los Odds Ratios pueden surgir debido a la transformación logarítmica aplicada en el modelo de regresión logística para calcular los coeficientes. Esta transformación no siempre refleja directamente la asociación entre las variables y la probabilidad de rotación.
+
+Por ejemplo, en el caso del ingreso mensual, el coeficiente estimado podría indicar una relación débil con la rotación, pero el Odds Ratio sugiere que incluso pequeños aumentos en el ingreso mensual pueden estar asociados con reducciones significativas en la probabilidad de rotación. Esta discrepancia resalta la importancia de considerar tanto los coeficientes como los Odds Ratios para obtener una comprensión completa de la relación entre las variables predictoras y la variable de respuesta.Mientras que los coeficientes de regresión logística nos proporcionan información sobre la dirección y la magnitud de la relación entre las variables predictoras y la probabilidad de rotación, los Odds Ratios nos ofrecen una perspectiva más intuitiva de cómo estos cambios afectan la probabilidad de rotación en términos de probabilidades relativas.
+
+</p>
+
 
 ## 4. Estimación del modelo
+<p>Realiza la estimación de un modelo de regresión logístico en el cual la variable respuesta es rotacion (y=1
+ es si rotación, y=0 es no rotación) y las covariables las 6 seleccionadas en el punto 1. Interprete los coeficientes del modelo y la significancia de los parámetros.</p>
 ```{r , warning=FALSE, echo=FALSE, message=FALSE}
 # Ajustar el modelo de regresión logística
 modelo <- glm(Rotación ~ `Viaje de Negocios` + Departamento + Horas_Extra + Edad + Ingreso_Mensual + Antigüedad_Cargo, data = rotacion, family = "binomial")
@@ -384,7 +454,7 @@ A continuación se procede con la interpretación de los coeficientes:
 7. Ingreso_Mensual: Un coeficiente negativo (-0.0000819) indica que un aumento en el ingreso mensual está asociado con menores log-odds de rotación, aunque el efecto es muy pequeño y casi despreciable.
 
 ## 5. Evaluación
-
+<p>Evaluar el poder predictivo del modelo con base en la curva ROC y el AUC.</p>
 ```{r , warning=FALSE, echo=FALSE, message=FALSE}
 
 # Predecir las probabilidades de rotación utilizando el modelo
@@ -400,13 +470,42 @@ plot(roc_obj, main = "Curva ROC del Modelo", col = "blue", lwd = 2)
 auc_result <- auc(roc_obj)
 cat("El área bajo la curva (AUC) es:", auc_result)
 
-
 ```
-## 6. Predicciones
+<p>
+Interpretación de la imagen del ROC y AUC
+La imagen muestra la curva ROC (Receiver Operating Characteristic) y el área bajo la curva (AUC) para un modelo de clasificación binaria.
 
+Curva ROC:
+
+La curva ROC muestra la probabilidad de detección verdadera (TPR) en función de la probabilidad de falsa alarma (FPR) para diferentes umbrales de clasificación.
+La curva ROC se traza en un espacio bidimensional, con la FPR en el eje X y la TPR en el eje Y.
+Una curva ROC ideal es la que se encuentra en la esquina superior izquierda del gráfico, lo que indica que el modelo es capaz de detectar todos los casos positivos sin generar ninguna falsa alarma.
+
+Área bajo la curva (AUC):
+
+El AUC es la proporción de la superficie total del gráfico ROC que se encuentra debajo de la curva.
+El AUC se expresa como un valor numérico entre 0 y 1.
+Un AUC de 1 indica que el modelo es perfecto, mientras que un AUC de 0 indica que el modelo no es mejor que una adivinanza aleatoria.
+
+Interpretación de la imagen:
+
+En la imagen que se muestra, la curva ROC se encuentra por encima de la diagonal aleatoria. Esto indica que el modelo es mejor que una adivinanza aleatoria para clasificar los casos.
+El AUC de la curva ROC es de 0.7654207. Este valor indica que el modelo tiene un buen rendimiento para clasificar los casos.
+
+
+**Conclusión:**
+
+En base a la imagen del ROC y AUC, se puede concluir que el modelo tiene un buen rendimiento para clasificar los casos. La curva ROC se encuentra por encima de la diagonal aleatoria y el AUC es de 0.7654207, lo que indica que el modelo es capaz de detectar los verdaderos positivos con una alta probabilidad y generar pocas falsas alarmas.
+</p>
+
+## 6. Predicciones
+<p>Realiza una predicción la probabilidad de que un individuo (hipotético) rote y defina un corte para decidir si se debe intervenir a este empleado o no (posible estrategia para motivar al empleado).</p>
 ```{r , warning=FALSE, echo=FALSE, message=FALSE}
 ```
 ## 7. Conclusiones
+<p>En las conclusiones adicione una discución sobre cuál sería la estrategia para disminuir la rotación en la empresa (con base en las variables que resultaron significativas en el punto 3).
+
+</p>
 ```{r , warning=FALSE, echo=FALSE, message=FALSE}
 ```
 ## 8. Anexos - Repositorio Código fuente
